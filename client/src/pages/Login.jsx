@@ -14,7 +14,9 @@ const Login = ({ setUser }) => {
     try {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
-      setUser(res.data.user);
+      // Fetch full profile (includes projects, theme, socials)
+      const profileRes = await api.get('/user/me');
+      setUser(profileRes.data);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.msg || 'Something went wrong');

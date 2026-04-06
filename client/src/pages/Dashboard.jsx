@@ -4,12 +4,23 @@ import { motion } from 'framer-motion';
 import { Save, LogOut, ExternalLink, Plus, Trash2, Layout, User as UserIcon, Briefcase, Share2 } from 'lucide-react';
 
 const Dashboard = ({ user, setUser }) => {
-  const [formData, setFormData] = useState(user);
+  const normalize = (u) => ({
+    ...u,
+    displayName: u?.displayName || '',
+    bio: u?.bio || '',
+    role: u?.role || '',
+    avatar: u?.avatar || '',
+    projects: u?.projects || [],
+    theme: u?.theme || { primaryColor: '#6366f1', darkMode: true },
+    socials: u?.socials || { github: '', linkedin: '', twitter: '', instagram: '' },
+  });
+
+  const [formData, setFormData] = useState(() => normalize(user));
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    setFormData(user);
+    setFormData(normalize(user));
   }, [user]);
 
   const handleSave = async () => {
@@ -58,7 +69,7 @@ const Dashboard = ({ user, setUser }) => {
       <header className="glass border-b border-slate-700/30 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+            <h1 className="text-xl font-bold" style={{ background: 'linear-gradient(to right, #818cf8, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Creator Dashboard
             </h1>
           </div>
@@ -234,8 +245,8 @@ const Dashboard = ({ user, setUser }) => {
                     type="text" 
                     className="input-field py-2 text-sm" 
                     placeholder={`https://${s}.com/your-id`}
-                    value={formData.socials[s] || ''} 
-                    onChange={(e) => setFormData({...formData, socials: {...formData.socials, [s]: e.target.value}})}
+                    value={(formData.socials || {})[s] || ''} 
+                    onChange={(e) => setFormData({...formData, socials: {...(formData.socials || {}), [s]: e.target.value}})}
                   />
                 </div>
               ))}
