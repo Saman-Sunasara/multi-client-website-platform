@@ -7,30 +7,45 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 
-// Basic health check
 app.get('/', (req, res) => {
-  res.send('Multi-Client SaaS Platform API is running...');
+  res.send('Multi-Client SaaS Platform API is running ✅');
 });
 
-// MongoDB Connection
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/saas-platform';
+const MONGO_URI = process.env.MONGO_URI || '';
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => console.error('MongoDB connection error:', err));
+async function startServer() {
+  try {
+    let uri = MONGO_URI;
+
+    // If no real MongoDB URI provided, use in-memory database (dev only)
+    if (!uri || uri.includes('localhost')) {
+      const { MongoMemoryServer } = require('mongodb-memory-server');
+      console.log('⚡ Starting in-memory MongoDB (no local MongoDB required)...');
+      const mongoServer = await MongoMemoryServer.create();
+      uri = mongoServer.getUri();
+      console.log(`✅ In-memory MongoDB started at: ${uri}`);
+    }
+
+    await mongoose.connect(uri);
+    console.log('✅ Connected to MongoDB');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Failed to start server:', err.message);
+    process.exit(1);
+  }
+}
+
+startServer();
